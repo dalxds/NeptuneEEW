@@ -1,0 +1,976 @@
+---
+openapi: "3.0.0"
+info:
+  description: "Model Definitions for Neptune EEW"
+  title: Neptune EEW Data Models
+  version: "1.5.0"
+components:
+  schemas:
+    EEWDevice:
+      type: object
+      required:
+        - id
+        - type
+      x-ngsi:
+        uri: https://dalxds.github.io/neptune-eew/schema/EEWDevice
+        uri-prefix: https://dalxds.github.io/neptune-eew/schema/
+      description: "An Early Earthquake Warning Device"
+      properties:
+        areaServed:
+          description: "The geographic area where a service or offered item is provided"
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/Text
+            uri: https://schema.org/areaServed
+        category:
+          description: "Sensor: A device that detects and responds to events or changes in the physical environment such as light, motion, or temperature changes. https://w3id.org/saref#Sensor."
+          items:
+            enum:
+              - sensor
+            type: string
+          type: array
+          x-ngsi:
+            type: Property
+            model: https://schema.org/Text
+            uri: https://smart-data-models.github.io/dataModel.Device/device-schema.json#/definitions/CategoryType
+        configuration:
+          type: object
+          description: "Device's technical configuration. This attribute is intended to be a array properties and their values which capture parameters which have to do with the configuration of a device (timeouts, reporting periods, etc.) and which are not currently covered by the standard attributes defined by this model."
+          x-ngsi:
+            type: Property
+            model: https://schema.org/StructuredValue
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/configuration
+          properties:
+            mode:
+              type: string
+              enum:
+                - sensor
+                - test
+                - standalone
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Text
+                uri: https://dalxds.github.io/neptune-eew/schema/mode
+            in_addr:
+              type: string
+              description: "((only for sensor mode)) Icoming data (UDP) ip address"
+              format: ipv4
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Text
+                uri: https://dalxds.github.io/neptune-eew/schema/in_addr
+            in_port:
+              type: integer
+              minLength: 4
+              maxLength: 6
+              description: "((only for sensor mode)) Icoming data (UDP) port"
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Integer
+                uri: https://dalxds.github.io/neptune-eew/schema/in_port
+            in_file:
+              type: string
+              description: "((only for test/standalone mode)) Icoming data file path"
+              x-ngsi:
+                type: Property
+                model: https://schema.org/URL
+                uri: https://dalxds.github.io/neptune-eew/schema/in_file
+            out_port:
+              type: integer
+              minLength: 4
+              maxLength: 6
+              description: Outgoing data (TCP) port
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Integer
+                uri: https://dalxds.github.io/neptune-eew/schema/out_port
+            is_accel:
+              type: integer
+              enum:
+                - 0
+                - 1
+              description: "Device has (1) or has not (0) accelerometer"
+              x-ngsi:
+                type: ENumProperty
+                model: https://schema.org/Integer
+                uri: https://dalxds.github.io/neptune-eew/schema/is_accel
+            samples_per_sec:
+              type: number
+              description: "Incoming data rate"
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Number
+                uri: https://dalxds.github.io/neptune-eew/schema/samples_per_sec
+            logger:
+              type: number
+              description: |
+                Data-Logger Conversion Factor
+                The conversion factor from counts to m/s2 (or m/s for velocimeters) is: data-logger constant/sensor constant.
+                The data-logger constant converts from Volts to counts (V/count).
+                If the data files are already in m/s2 or m/s rather than counts, use 1 for both constants. 
+                If they are in cm/s2 or cm/s, use 1 for the data-logger constant and 100 for the sensor constant.
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Number
+                uri: https://dalxds.github.io/neptune-eew/schema/logger
+            sensor:
+              type: number
+              description: |
+                Sensor Conversion Factor
+                The sensor constant converts from e.g. acceleration to Volts (V ⋅ s2/m).
+                The data-logger constant converts from Volts to counts (V/count).
+                If the data files are already in m/s2 or m/s rather than counts, use 1 for both constants. 
+                If they are in cm/s2 or cm/s, use 1 for the data-logger constant and 100 for the sensor constant.
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Number
+                uri: https://dalxds.github.io/neptune-eew/schema/sensor
+            waveform_rmean_secs:
+              type: number
+              description: |
+                After picking, remove from each 1-second of waveform the signal mean computed on this many previous seconds. 
+                The resulting waveform is the one displayed and used to measure peak displacements. 
+                Use 0 to disable.
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Number
+                uri: https://dalxds.github.io/neptune-eew/schema/waveform_rmean_secs
+            picker_filterWindow:
+              type: number
+              description: |
+                How far back in seconds the previous samples are examined.
+                The filter window will be adjusted upwards to be an integer N power of 2 times the sample interval (deltaTime).
+                Then numRecursive = N + 1 "filter bands" are created. For each filter band n = 0,N the data samples are processed through a simple recursive filter backwards from the current sample, and picking statistics and characteristic function are generated.
+                Picks are generated based on the maximum of the characteristic function values over all filter bands relative to the threshold values threshold1 and threshold2.
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Number
+                uri: https://dalxds.github.io/neptune-eew/schema/picker_filterWindow
+            picker_longTermWindow:
+              type: number
+              description: |
+                Long term window in seconds. 
+                It determines:
+                A stabilization delay time after the beginning of data; before this delay time picks will not be generated.
+                The decay constant of a simple recursive filter to accumulate/smooth all picking statistics and characteristic functions for all filter bands.
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Number
+                uri: https://dalxds.github.io/neptune-eew/schema/picker_longTermWindow
+            picker_threshold1:
+              type: number
+              description: |
+                Threshold to trigger a pick event (potential pick). 
+                This threshold is reached when the (clipped) characteristic function for any filter band exceeds threshold1.
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Number
+                uri: https://dalxds.github.io/neptune-eew/schema/picker_threshold1
+            picker_threshold2:
+              type: number
+              description: |
+                Threshold to declare a pick (pick will be accepted when tUpEvent reached).
+                This threshold is reached when the integral of the (clipped) characteristic function for any filter band over the window tUpEvent exceeds threshold2 * tUpEvent, i.e. the average (clipped) characteristic function over tUpEvent is greater than threshold2.
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Number
+                uri: https://dalxds.github.io/neptune-eew/schema/picker_threshold2
+            picker_tUpEvent:
+              type: number
+              description: |
+                Maximum time the integral of the (clipped) characteristic function is accumulated after threshold1 is reached (pick event triggered) to check for this integral exceeding threshold2 * tUpEvent (pick declared).
+              x-ngsi:
+                type: Property
+                model: https://schema.org/Number
+                uri: https://dalxds.github.io/neptune-eew/schema/picker_tUpEvent
+            e_id:
+              type: string
+              description: "East Channel Identifier"
+              enum:
+                - ENE
+              x-ngsi:
+                type: ENumProperty
+                model: https://schema.org/Text
+                uri: https://dalxds.github.io/neptune-eew/schema/e_id
+            n_id:
+              type: string
+              description: "North Channel Identifier"
+              enum:
+                - ENN
+              x-ngsi:
+                type: ENumProperty
+                model: https://schema.org/Text
+                uri: https://dalxds.github.io/neptune-eew/schema/n_id
+            z_id:
+              type: string
+              description: "Vertical Channel Identifier"
+              enum:
+                - ENZ
+                - EHZ
+              x-ngsi:
+                type: ENumProperty
+                model: https://schema.org/Text
+                uri: https://dalxds.github.io/neptune-eew/schema/z_id
+        dateCreated:
+          description: "Entity creation timestamp. This will usually be allocated by the storage platform."
+          format: date-time
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/DateTime
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/dateCreated
+        dateFirstUsed:
+          description: "A timestamp which denotes when the device was first used."
+          format: date-time
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/DateTime
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/dateFirstUsed
+        dateInstalled:
+          description: "A timestamp which denotes when the device was installed (if it requires installation)."
+          format: date-time
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/DateTime
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/dateInstalled
+        dateLastCalibration:
+          description: "A timestamp which denotes when the last calibration of the device happened."
+          format: date-time
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/DateTime
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/dateLastCalibration
+        dateLastValueReported:
+          description: "A timestamp which denotes the last time when the device successfully reported data to the cloud."
+          format: date-time
+          type: string
+          x-ngsi:
+            model: https://schema.org/DateTime
+            type: Property
+        dateManufactured:
+          description: "A timestamp which denotes when the device was manufactured."
+          format: date-time
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/DateTime
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/dateManufactured
+        dateModified:
+          description: "Timestamp of the last modification of the entity. This will usually be allocated by the storage platform."
+          format: date-time
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/DateTime
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/dateModified
+        dateObserved:
+          description: "Date of the observed entity defined by the user."
+          format: date-time
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/DateTime
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/dateObserved
+        depth:
+          description: "Location of this device represented by a depth from a starting point. All units are accepted in [CEFACT](https://www.unece.org/cefact.html) code"
+          type: number
+          x-ngsi:
+            type: Property
+            model: https://schema.org/depth
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/depth
+        description:
+          description: "A description of this item"
+          type: string
+          x-ngsi:
+            type: Property
+            uri: https://uri.etsi.org/ngsi-ld/description
+        deviceState:
+          description: "State of this device from an operational point of view. Its value can be vendor dependent."
+          type: string
+          x-ngsi:
+            type: Property
+            units: meters
+            model: https://schema.org/Text
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/deviceState
+        elevation:
+          description: "Elevation (in meters) at the spot the device is installed."
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/elevation
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/elevation
+        firmwareVersion:
+          description: "The firmware version of this device."
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/Text
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/firmwareVersion
+        hardwareVersion:
+          description: "The hardware version of this device."
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/Text
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/hardwareVersion
+        id:
+          anyOf:
+            - description: "Property. Identifier format of any NGSI entity"
+              maxLength: 256
+              minLength: 1
+              pattern: ^[\w\-\.\{\}\$\+\*\[\]`|~^@!,:\\]+$
+              type: string
+            - description: "Property. Identifier format of any NGSI entity"
+              format: uri
+              type: string
+          description: "Unique identifier of the entity"
+          x-ngsi:
+            type: Property
+        location:
+          description: "Geojson reference to the item. It can be Point, LineString, Polygon, MultiPoint, MultiLineString or MultiPolygon"
+          oneOf:
+            - description: "Geoproperty. Geojson reference to the item. Point"
+              properties:
+                bbox:
+                  items:
+                    type: number
+                  minItems: 4
+                  type: array
+                coordinates:
+                  items:
+                    type: number
+                  minItems: 2
+                  type: array
+                type:
+                  enum:
+                    - Point
+                  type: string
+              required:
+                - type
+                - coordinates
+              title: "GeoJSON Point"
+              type: object
+            - description: "Geoproperty. Geojson reference to the item. LineString"
+              properties:
+                bbox:
+                  items:
+                    type: number
+                  minItems: 4
+                  type: array
+                coordinates:
+                  items:
+                    items:
+                      type: number
+                    minItems: 2
+                    type: array
+                  minItems: 2
+                  type: array
+                type:
+                  enum:
+                    - LineString
+                  type: string
+              required:
+                - type
+                - coordinates
+              title: "GeoJSON LineString"
+              type: object
+            - description: "Geoproperty. Geojson reference to the item. Polygon"
+              properties:
+                bbox:
+                  items:
+                    type: number
+                  minItems: 4
+                  type: array
+                coordinates:
+                  items:
+                    items:
+                      items:
+                        type: number
+                      minItems: 2
+                      type: array
+                    minItems: 4
+                    type: array
+                  type: array
+                type:
+                  enum:
+                    - Polygon
+                  type: string
+              required:
+                - type
+                - coordinates
+              title: "GeoJSON Polygon"
+              type: object
+            - description: "Geoproperty. Geojson reference to the item. MultiPoint"
+              properties:
+                bbox:
+                  items:
+                    type: number
+                  minItems: 4
+                  type: array
+                coordinates:
+                  items:
+                    items:
+                      type: number
+                    minItems: 2
+                    type: array
+                  type: array
+                type:
+                  enum:
+                    - MultiPoint
+                  type: string
+              required:
+                - type
+                - coordinates
+              title: "GeoJSON MultiPoint"
+              type: object
+            - description: "Geoproperty. Geojson reference to the item. MultiLineString"
+              properties:
+                bbox:
+                  items:
+                    type: number
+                  minItems: 4
+                  type: array
+                coordinates:
+                  items:
+                    items:
+                      items:
+                        type: number
+                      minItems: 2
+                      type: array
+                    minItems: 2
+                    type: array
+                  type: array
+                type:
+                  enum:
+                    - MultiLineString
+                  type: string
+              required:
+                - type
+                - coordinates
+              title: "GeoJSON MultiLineString"
+              type: object
+            - description: "Geoproperty. Geojson reference to the item. MultiLineString"
+              properties:
+                bbox:
+                  items:
+                    type: number
+                  minItems: 4
+                  type: array
+                coordinates:
+                  items:
+                    items:
+                      items:
+                        items:
+                          type: number
+                        minItems: 2
+                        type: array
+                      minItems: 4
+                      type: array
+                    type: array
+                  type: array
+                type:
+                  enum:
+                    - MultiPolygon
+                  type: string
+              required:
+                - type
+                - coordinates
+              title: "GeoJSON MultiPolygon"
+              type: object
+          x-ngsi:
+            type: Geoproperty
+        macAddress:
+          description: "The MAC address of the device."
+          pattern: ^([[:xdigit:]]{2}[:.-]?){5}[[:xdigit:]]{2}$
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/Text
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/macAddress
+        mcc:
+          description: "This property identifies the Mobile Country Code"
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/Text
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/mcc
+        mnc:
+          description: "This property identifies the Mobile Network Code (MNC) of the network the device is attached to. The MNC is used in combination with a Mobile Country Code (MCC) (also known as a 'MCC / MNC tuple') to uniquely identify a mobile phone operator/carrier using the GSM, CDMA, iDEN, TETRA and 3G / 4G public land mobile networks and some satellite mobile networks."
+          type: string
+          x-ngsi:
+            model: https://schema.org/Text
+            type: Property
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/mnc
+        name:
+          description: "The name of this item."
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/Text
+            uri: https://uri.etsi.org/ngsi-ld/name
+        osVersion:
+          description: "The version of the host operating system device."
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/Text
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/osVersion
+        owner:
+          description: "A List containing a JSON encoded sequence of characters referencing the unique Ids of the owner(s)"
+          items:
+            anyOf:
+              - description: "Property. Identifier format of any NGSI entity"
+                maxLength: 256
+                minLength: 1
+                pattern: ^[\w\-\.\{\}\$\+\*\[\]`|~^@!,:\\]+$
+                type: string
+              - description: "Property. Identifier format of any NGSI entity"
+                format: uri
+                type: string
+            description: "Property. Unique identifier of the entity"
+          type: array
+          x-ngsi:
+            type: Property
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/owner
+        rssi:
+          description: "Received signal strength indicator for a wireless enabled device. It must be expressed in dBm or mW, use unitcode to set it out. "
+          type: number
+          x-ngsi:
+            type: Property
+            model: https://schema.org/Number
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/rssi
+        seeAlso:
+          description: "list of uri pointing to additional resources about the item"
+          oneOf:
+            - items:
+                format: uri
+                type: string
+              minItems: 1
+              type: array
+            - format: uri
+              type: string
+          x-ngsi:
+            type: Property
+            uri: https://uri.fiware.org/ns/data-models#seeAlso
+        serialNumber:
+          description: "The serial number assigned by the manufacturer."
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/serialNumber
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/serialNumber
+        softwareVersion:
+          description: "The software version of this device."
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/Text
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/softwareVersion
+        source:
+          description: "A sequence of characters giving the original source of the entity data as a URL. Recommended to be the fully qualified domain name of the source provider, or the URL to the source object."
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/URL
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/source
+        supportedProtocol:
+          description: "Supported protocol(s) or networks"
+          items:
+            enum:
+              - 3g
+              - bluetooth
+              - "bluetooth LE"
+              - cat-m
+              - coap
+              - ec-gsm-iot
+              - gprs
+              - http
+              - lwm2m
+              - lora
+              - lte-m
+              - mqtt
+              - nb-iot
+              - onem2m
+              - sigfox
+              - ul20
+              - websocket
+            type: string
+          type: array
+          x-ngsi:
+            type: Property
+            model: "3g, bluetooth, bluetooth LE, cat-m, coap, ec-gsm-iot, gprs, http, lwm2m, lora, lte-m, mqtt, nb-iot, onem2m, sigfox, ul20, websocket"
+            uri: https://smart-data-models.github.io/data-models/terms.jsonld#/definitions/supportedProtocol
+        type:
+          description: "NGSI Entity type. It has to be Device"
+          enum:
+            - Device
+          type: string
+          x-ngsi:
+            type: Property
+    Event:
+      type: object
+      required:
+        - id
+        - type
+      x-ngsi:
+        uri: http://quakeml.org/schema/xsd/definitions/Event
+        uri-prefix: http://quakeml.org/schema/xsd/definitions/
+      properties:
+        id:
+          anyOf:
+            - description: "Property. Identifier format of any NGSI entity"
+              maxLength: 256
+              minLength: 1
+              pattern: ^[\w\-\.\{\}\$\+\*\[\]`|~^@!,:\\]+$
+              type: string
+            - description: "Property. Identifier format of any NGSI entity"
+              format: uri
+              type: string
+          description: "Unique identifier of the entity"
+          x-ngsi:
+            type: Property
+        type:
+          description: "NGSI Entity type. It has to be Event"
+          enum:
+            - Event
+          type: string
+          x-ngsi:
+            type: Property
+        publicId:
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/URL
+            pattern: (smi|quakeml):[\\w\\d][\\w\\d\\-\\.\\*\\(\\)_~']{2,}/[\\w\\d\\-\\.\\*\\(\\)_~'][\\w\\d\\-\\.\\*\\(\\)\\+\\?_~'=,;#/&]*
+            uri: http://quakeml.org/schema/xsd/definitions/Εvent/publicID
+        eventType:
+          type: string
+          enum:
+            - not existing
+            - not reported
+            - earthquake
+          x-ngsi:
+            type: EnumProperty
+            model: https://schema.org/Text
+            uri: http://quakeml.org/schema/xsd/definitions/EventType
+        # preferredOriginId:
+        #   anyOf:
+        #     - description: "Property. Identifier format of any NGSI entity"
+        #       maxLength: 256
+        #       minLength: 1
+        #       pattern: ^[\w\-\.\{\}\$\+\*\[\]`|~^@!,:\\]+$
+        #       type: string
+        #     - description: "Property. Identifier format of any NGSI entity"
+        #       format: uri
+        #       type: string
+        #   x-ngsi:
+        #     type: Relationship
+        #     model: https://schema.org/URL
+        #     uri: http://quakeml.org/schema/xsd/definitions/Origin
+        # preferredMagnitudeId:
+        #   anyOf:
+        #     - description: "Property. Identifier format of any NGSI entity"
+        #       maxLength: 256
+        #       minLength: 1
+        #       pattern: ^[\w\-\.\{\}\$\+\*\[\]`|~^@!,:\\]+$
+        #       type: string
+        #     - description: "Property. Identifier format of any NGSI entity"
+        #       format: uri
+        #       type: string
+        #   x-ngsi:
+        #     type: Relationship
+        #     model: https://schema.org/URL
+        #     uri: http://quakeml.org/schema/xsd/definitions/Magnitude
+    Origin:
+      type: object
+      required:
+        - id
+        - type
+      x-ngsi:
+        uri: http://quakeml.org/schema/xsd/definitions/Origin
+        uri-prefix: http://quakeml.org/schema/xsd/definitions/
+      properties:
+        id:
+          anyOf:
+            - description: "Property. Identifier format of any NGSI entity"
+              maxLength: 256
+              minLength: 1
+              pattern: ^[\w\-\.\{\}\$\+\*\[\]`|~^@!,:\\]+$
+              type: string
+            - description: "Property. Identifier format of any NGSI entity"
+              format: uri
+              type: string
+          description: "Unique identifier of the entity"
+          x-ngsi:
+            type: Property
+        type:
+          description: "NGSI Entity type. It has to be Origin"
+          enum:
+            - Origin
+          type: string
+          x-ngsi:
+            type: Property
+        publicId:
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/URL
+            pattern: (smi|quakeml):[\\w\\d][\\w\\d\\-\\.\\*\\(\\)_~']{2,}/[\\w\\d\\-\\.\\*\\(\\)_~'][\\w\\d\\-\\.\\*\\(\\)\\+\\?_~'=,;#/&]*
+            uri: http://quakeml.org/schema/xsd/definitions/Origin/publicID
+        time:
+          type: object
+          x-ngsi:
+            uri: http://quakeml.org/schema/xsd/definitions/Origin/time
+          properties:
+            value:
+              type: string
+              format: date-time
+              x-ngsi:
+                type: Property
+                model: https://schema.org/DateTime
+                uri: https://uri.etsi.org/ngsi-ld/observedAt
+        location:
+          type: object
+          externalDocs:
+            url: http://geojson.org/geojson-spec.html#geometry-objects
+          x-ngsi:
+            type: GeoProperty
+            model: https://purl.org/geojson/vocab#Point
+            uri: https://uri.etsi.org/ngsi-ld/location
+          properties:
+            type:
+              enum:
+                - Point
+              type: string
+              x-ngsi:
+                type: EnumProperty
+                model: https://schema.org/Text
+            coordinates:
+              type: array
+              items:
+                minItems: 2
+                maxItems: 2
+                items:
+                  type: number
+                  format: double
+        latitude:
+          type: object
+          x-ngsi:
+            type: Property
+            uri: http://quakeml.org/schema/xsd/definitions/Origin/latitude
+          properties:
+            value:
+              type: number
+              format: double
+            uncertainty:
+              type: number
+              format: double
+        longitude:
+          type: object
+          x-ngsi:
+            type: Property
+            uri: http://quakeml.org/schema/xsd/definitions/Origin/longitude
+          properties:
+            value:
+              type: number
+              format: double
+            uncertainty:
+              type: number
+              format: double
+        depth:
+          type: object
+          x-ngsi:
+            uri: http://quakeml.org/schema/xsd/definitions/Origin/depth
+          properties:
+            value:
+              type: number
+              format: double
+            uncertainty:
+              type: number
+              format: double
+        associatedEvent:
+          anyOf:
+            - description: "Property. Identifier format of any NGSI entity"
+              maxLength: 256
+              minLength: 1
+              pattern: ^[\w\-\.\{\}\$\+\*\[\]`|~^@!,:\\]+$
+              type: string
+            - description: "Property. Identifier format of any NGSI entity"
+              format: uri
+              type: string
+          x-ngsi:
+            type: Relationship
+            model: https://schema.org/URL
+            uri: https://dalxds.github.io/neptune-eew/schema/associatedEvent
+            uri-prefix: https://dalxds.github.io/neptune-eew/schema/
+    Magnitude:
+      type: object
+      required:
+        - id
+        - type
+      x-ngsi:
+        uri: http://quakeml.org/schema/xsd/definitions/Magnitude
+        uri-prefix: http://quakeml.org/schema/xsd/definitions/
+      properties:
+        id:
+          anyOf:
+            - description: "Property. Identifier format of any NGSI entity"
+              maxLength: 256
+              minLength: 1
+              pattern: ^[\w\-\.\{\}\$\+\*\[\]`|~^@!,:\\]+$
+              type: string
+            - description: "Property. Identifier format of any NGSI entity"
+              format: uri
+              type: string
+          description: "Unique identifier of the entity"
+          x-ngsi:
+            type: Property
+        type:
+          description: "NGSI Entity type. It has to be Magnitude"
+          enum:
+            - Magnitude
+          type: string
+          x-ngsi:
+            type: Property
+        publicId:
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/URL
+            pattern: (smi|quakeml):[\\w\\d][\\w\\d\\-\\.\\*\\(\\)_~']{2,}/[\\w\\d\\-\\.\\*\\(\\)_~'][\\w\\d\\-\\.\\*\\(\\)\\+\\?_~'=,;#/&]*
+            uri: http://quakeml.org/schema/xsd/definitions/Magnitude/publicID
+        mag:
+          type: object
+          x-ngsi:
+            type: Property
+            uri: http://quakeml.org/schema/xsd/definitions/Magnitude/mag
+          properties:
+            value:
+              type: number
+              format: double
+              x-ngsi:
+                uri: http://quakeml.org/schema/xsd/definitions/RealQuantity/value
+            lowerUncertainty:
+              type: number
+              format: double
+              x-ngsi:
+                uri: http://quakeml.org/schema/xsd/definitions/RealQuantity/lowerUncertainty
+            upperUncertainty:
+              type: number
+              format: double
+              x-ngsi:
+                uri: http://quakeml.org/schema/xsd/definitions/RealQuantity/upperUncertainty
+        associatedEvent:
+          anyOf:
+            - description: "Property. Identifier format of any NGSI entity"
+              maxLength: 256
+              minLength: 1
+              pattern: ^[\w\-\.\{\}\$\+\*\[\]`|~^@!,:\\]+$
+              type: string
+            - description: "Property. Identifier format of any NGSI entity"
+              format: uri
+              type: string
+          x-ngsi:
+            type: Relationship
+            model: https://schema.org/URL
+            uri: https://dalxds.github.io/neptune-eew/schema/associatedEvent
+            uri-prefix: https://dalxds.github.io/neptune-eew/schema/
+    Pick:
+      type: object
+      required:
+        - id
+        - type
+      x-ngsi:
+        uri: http://quakeml.org/schema/xsd/definitions/Pick
+        uri-prefix: http://quakeml.org/schema/xsd/definitions/
+      properties:
+        id:
+          anyOf:
+            - description: "Property. Identifier format of any NGSI entity"
+              maxLength: 256
+              minLength: 1
+              pattern: ^[\w\-\.\{\}\$\+\*\[\]`|~^@!,:\\]+$
+              type: string
+            - description: "Property. Identifier format of any NGSI entity"
+              format: uri
+              type: string
+          description: "Unique identifier of the entity"
+          x-ngsi:
+            type: Property
+        type:
+          description: "NGSI Entity type. It has to be Pick"
+          enum:
+            - Pick
+          type: string
+          x-ngsi:
+            type: Property
+        publicId:
+          type: string
+          x-ngsi:
+            type: Property
+            model: https://schema.org/URL
+            pattern: (smi|quakeml):[\\w\\d][\\w\\d\\-\\.\\*\\(\\)_~']{2,}/[\\w\\d\\-\\.\\*\\(\\)_~'][\\w\\d\\-\\.\\*\\(\\)\\+\\?_~'=,;#/&]*
+            uri: http://quakeml.org/schema/xsd/definitions/Pick/publicID
+        time:
+          type: object
+          x-ngsi:
+            uri: http://quakeml.org/schema/xsd/definitions/TimeQuantity
+          properties:
+            value:
+              type: string
+              format: date-time
+              x-ngsi:
+                type: Property
+                model: https://schema.org/DateTime
+                uri: https://uri.etsi.org/ngsi-ld/observedAt
+                uri-prefix: https://uri.etsi.org/ngsi-ld/
+        waveformId:
+          type: object
+          required:
+            - networkCode
+            - stationCode
+          x-ngsi:
+            type: Property
+            uri: http://quakeml.org/schema/xsd/definitions/WaveformStreamID
+          properties:
+            networkCode:
+              type: string
+              maxLength: 8
+            stationCode:
+              type: string
+              maxLength: 8
+            channelCode:
+              type: string
+              maxLength: 8
+            locationCode:
+              type: string
+              maxLength: 8
+        associatedEvent:
+          anyOf:
+            - description: "Property. Identifier format of any NGSI entity"
+              maxLength: 256
+              minLength: 1
+              pattern: ^[\w\-\.\{\}\$\+\*\[\]`|~^@!,:\\]+$
+              type: string
+            - description: "Property. Identifier format of any NGSI entity"
+              format: uri
+              type: string
+          x-ngsi:
+            type: Relationship
+            model: https://schema.org/URL
+            uri: https://dalxds.github.io/neptune-eew/schema/associatedEvent
+            uri-prefix: https://dalxds.github.io/neptune-eew/schema/
+paths:
+  /ngsi-ld/v1/entities:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/ld+json:
+              schema:
+                type: object
